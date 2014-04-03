@@ -25,12 +25,6 @@ var yAxis = d3.svg.axis()
     .tickSize(-width)
     .tickPadding(6);
 
-var area = d3.svg.area()
-    .interpolate("step-after")
-    .x(function(d, i) { return x(i); })
-    .y0(y(0))
-    .y1(function(d, i) { return y(d); });
-
 var line = d3.svg.line()
     .interpolate("basis")
     .x(function(d, i) { return x(i); })
@@ -44,18 +38,6 @@ var svg = d3.select("body").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-function draw() {
-  svg.select("g.x.axis").call(xAxis);
-  svg.select("g.y.axis").call(yAxis);
-  //svg.select("path.line").attr("d", line);
-  stock_method(stocks);
-}
-
-svg.append("path")
-    .attr("class", "area")
-    .attr("clip-path", "url(#clip)")
-    .style("fill", "url(#gradient)");
 
 svg.append("rect")
     .attr("class", "pane")
@@ -73,6 +55,7 @@ svg.append("clipPath")
 
 function stock_method(stocks) {
 
+  svg.selectAll(".stock").data([]).exit().remove();
   var stock = svg.selectAll(".stock")
       .data(stocks)
     .enter().append("g")
@@ -113,9 +96,6 @@ d3.xhr("/return_stock_values", function(error, data) {
   ]);
   zoom.x(x);
 
-  svg.select("path.line").data([data]);
-  draw();
-
   svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
@@ -131,9 +111,16 @@ d3.xhr("/return_stock_values", function(error, data) {
       .style("text-anchor", "end")
       .text("Stock Value");
 
-      svg.append("path")
-      .attr("class", "line")
-      .attr("clip-path", "url(#clip)");
+  svg.append("path")
+    .attr("class", "line")
+    .attr("clip-path", "url(#clip)");
 
-  stock_method(stocks);
+  draw();
 });
+
+
+function draw() {
+  svg.select("g.x.axis").call(xAxis);
+  svg.select("g.y.axis").call(yAxis);
+  stock_method(stocks);
+};
